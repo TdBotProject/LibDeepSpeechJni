@@ -1,0 +1,55 @@
+name: Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  x86_64:
+    name: x86_64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: ./linux_build.sh
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: libdeepspeech.so
+          asset_name: libdeepspeech.x86_64.so
+          tag: ${{ github.ref }}
+          overwrite: true
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: libdeepspeech-jni.so
+          asset_name: libdeepspeech-jni.x86_64.so
+          tag: ${{ github.ref }}
+          overwrite: true
+  arm64v8:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Init QEMU User Static
+        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      - name: Build
+        run: docker run -v $PWD:/root -w /root -e ARCH=arm64 -e TYPE=cpu arm64v8/ubuntu:bionic bash linux_build.sh
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: libdeepspeech.so
+          asset_name: libdeepspeech-aarch64.so
+          tag: ${{ github.ref }}
+          overwrite: true
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: libdeepspeech-jni.so
+          asset_name: libdeepspeech-jni.aarch64.so
+          tag: ${{ github.ref }}
+          overwrite: true
