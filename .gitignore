@@ -1,0 +1,4 @@
+*.iml
+/build
+/cmake-build-debug/
+/.idea/
